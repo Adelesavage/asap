@@ -1062,7 +1062,7 @@ main{overflow-x:clip}
         var a=0;for(var i=0;i<tops.length;i++)if(p>=tops[i]-.001)a=i;mks.forEach(function(m,i){m.classList.toggle('on',i===a)})}
     }
     var ticking=false;window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(function(){ticking=false;upd()})}},{passive:true});
-    window.addEventListener('resize',layout);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(layout);
+    var lw2=innerWidth;window.addEventListener('resize',function(){if(innerWidth===lw2){upd(true);return}lw2=innerWidth;layout()});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(layout);
     layout();setTimeout(layout,800);
   })();
   /* hero wordmark parallax */
@@ -1099,7 +1099,8 @@ main{overflow-x:clip}
       tabs.forEach(function(t,j){var on=j===k;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;t.querySelector('.prog').style.width='0'});
       panels.forEach(function(p,j){var on=j===k;p.classList.toggle('on',on);if(on)p.removeAttribute('aria-hidden');else p.setAttribute('aria-hidden','true')});
       if(focus)tabs[k].focus();
-      tabs[k].scrollIntoView({block:'nearest',inline:'nearest'});
+      var wr=tabs[k].closest('.fm-tabs-wrap');if(wr&&wr.scrollWidth>wr.clientWidth){var tl=tabs[k].offsetLeft,tw=tabs[k].offsetWidth;
+        if(tl<wr.scrollLeft)wr.scrollLeft=tl;else if(tl+tw>wr.scrollLeft+wr.clientWidth)wr.scrollLeft=tl+tw-wr.clientWidth}
     }
     tabs.forEach(function(t,j){
       t.addEventListener('click',function(){sel(j)});
@@ -1204,16 +1205,17 @@ main{overflow-x:clip}
   /* reserve the taller of EN/RU height for each block, so switching never pushes the page */
   var RES=[].slice.call(document.querySelectorAll('.hero>div,.stats,.sh,#work>h2,.an-body,.ph-col,.fm-head,.fm-tabs-wrap,.fm-panels,.fm-note,.reel-c,.about-copy,.timeline,.caps,.contact .wrap'));
   function reserve(){
-    RES.forEach(function(e){e.style.minHeight=''});
+    var y0=scrollY;RES.forEach(function(e){e.style.minHeight=''});
     var a=RES.map(function(e){return e.getBoundingClientRect().height});
     var other=LANG==='ru'?'en':'ru';
     nodes.forEach(function(o){o.n.nodeValue=o.pre+(other==='ru'?o.ru:o.en)+o.post});
     var b=RES.map(function(e){return e.getBoundingClientRect().height});
     nodes.forEach(function(o){o.n.nodeValue=o.pre+(LANG==='ru'?o.ru:o.en)+o.post});
     RES.forEach(function(e,i){e.style.minHeight=Math.ceil(Math.max(a[i],b[i]))+'px'});
+    if(Math.abs(scrollY-y0)>1)window.scrollTo(0,y0);
   }
   reserve();
-  var rt;window.addEventListener('resize',function(){moveLu();clearTimeout(rt);rt=setTimeout(reserve,150)});
+  var rt,lastW=innerWidth;window.addEventListener('resize',function(){if(innerWidth===lastW)return;lastW=innerWidth;moveLu();clearTimeout(rt);rt=setTimeout(reserve,150)});
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){moveLu();reserve()});
 })();
 </script>
